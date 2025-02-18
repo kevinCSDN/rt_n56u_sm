@@ -52,12 +52,16 @@ jobs:
         with:
           limit-access-to-actor: true
       - name: Start build
+        env:
+          MAKE_JOBS: 4  # 设置并行任务数
         run: |
           cd trunk
           mkdir -p ${images_dir}
-          for m in $targets; do fakeroot ./build_firmware_ci -j4 $m; \
-          if [ $? = 0 ]; then cp -f images/*.trx ${images_dir}/$m.trx; else exit 1; fi; \
-          ./clear_tree_simple >/dev/null 2>&1; done
+          for m in $targets; do
+            fakeroot ./build_firmware_ci $m; \
+            if [ $? = 0 ]; then cp -f images/*.trx ${images_dir}/$m.trx; else exit 1; fi; \
+            ./clear_tree_simple >/dev/null 2>&1
+          done
       - name: Create archive
         if: ${{ github.event_name != 'release' && success() }}
         run: |
